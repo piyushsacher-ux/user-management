@@ -1,80 +1,94 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
-
+const jwt = require("jsonwebtoken");
+require("dotenv").config()
 const app = express();
 app.use(express.json());
+const PORT=process.env.PORT || 3000;
+const dataDir = path.join(__dirname, "data");
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
 
-const filePath = path.join(__dirname, "data", "userdata.json");
+const filePath = path.join(dataDir, "userdata.json");
 
-// 1) SAFE JSON LOADER -----------------------
-function loadJSON() {
+// Load users safely
+function loadUsers() {
     try {
-        let raw = fs.readFileSync(filePath, "utf8").trim();
-
-        // If file is empty → repair it
-        if (!raw) {
-            const fixed = { users: [] };
-            fs.writeFileSync(filePath, JSON.stringify(fixed, null, 2));
-            return fixed;
+        if (!fs.existsSync(filePath)) {
+            fs.writeFileSync(filePath, JSON.stringify({ users: [] }, null, 2));
+            return { users: [] };
         }
 
-        return JSON.parse(raw);
+        const raw = fs.readFileSync(filePath, "utf8").trim();
+        if (!raw) return { users: [] };
 
-    } catch (err) {
-        // If file is invalid/corrupt → reset
-        const fixed = { users: [] };
-        fs.writeFileSync(filePath, JSON.stringify(fixed, null, 2));
-        return fixed;
+        return JSON.parse(raw);
+    } catch {
+        return { users: [] };
     }
 }
 
+// Save users
+function saveUsers(obj) {
+    fs.writeFileSync(filePath, JSON.stringify(obj, null, 2));
+}
 
+// Remove expired users
 function removeExpiredUsers() {
-    let obj = loadJSON(); 
-    let users = obj.users;
+    const obj = loadUsers();
     const now = new Date();
 
-    users = users.filter(u =>
-        u.isVerified || (now - new Date(u.createdAt)) < 5 * 60 * 1000
+    obj.users = obj.users.filter(
+        u => u.isVerified || (now - new Date(u.createdAt)) < 5 * 60 * 1000
     );
 
-    fs.writeFileSync(filePath, JSON.stringify({ users }, null, 2));
+    saveUsers(obj);
 }
+
+// Register route
 app.post("/register", (req, res) => {
-    removeExpiredUsers();
+    try {
+        const { username, email, password } = req.body || {};
 
-    const { username, email, password } = req.body;
-    const obj = loadJSON();
+        if (!username || !email || !password) {
+            return res.status(400).json({ message: "username, email, and password required" });
+        }
 
+        removeExpiredUsers();
 
-    if (obj.users.find(u => u.email === email)) {
-        return res.status(400).json({ message: "Email already in use" });
+        const obj = loadUsers();
+        if (obj.users.find(u => u.email === email)) {
+            return res.status(400).json({ message: "Email already in use" });
+        }
+
+        const nextId = obj.users.length ? obj.users[obj.users.length - 1].id + 1 : 1;
+        const sessionId = Date.now();
+        const token = jwt.sign({ email, sessionId }, "abcde123", { expiresIn: "5m" });
+
+        const newUser = {
+            id: nextId,
+            username,
+            email,
+            password,
+            isVerified: false,
+            createdAt: new Date(),
+            sessions: [sessionId]
+        };
+
+        obj.users.push(newUser);
+        saveUsers(obj);
+
+        const { isVerified, createdAt, ...safeUser } = newUser;
+
+        res.json({
+            message: "User registered. Please verify your email within 5 minutes.",
+            user: safeUser,
+            token
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
     }
-
-    const nextId = obj.users.length
-        ? obj.users[obj.users.length - 1].id + 1
-        : 1;
-
-    const newUser = {
-        id: nextId,
-        username,
-        email,
-        password,
-        isVerified: false,
-        createdAt: new Date()
-    };
-
-    obj.users.push(newUser);
-    fs.writeFileSync(filePath, JSON.stringify(obj, null, 2));
-
-    const { isVerified, createdAt, ...safeUser } = newUser;
-
-    res.json({
-        message: "User registered. Please verify your email within 5 minutes.",
-        user: safeUser
-    });
 });
 
-
-app.listen(3000, () => console.log("Server running on port 3000"));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

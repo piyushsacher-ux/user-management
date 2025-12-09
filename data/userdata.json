@@ -3,18 +3,24 @@
     {
       "id": 1,
       "username": "piyush123",
-      "email": "piyush@example.com",
+      "email": "piyush69@example.com",
       "password": "12345",
       "isVerified": false,
-      "createdAt": "2025-12-09T09:46:06.028Z"
+      "createdAt": "2025-12-09T11:22:01.603Z",
+      "sessions": [
+        1765279321601
+      ]
     },
     {
       "id": 2,
       "username": "piyush123",
-      "email": "piyush1@example.com",
+      "email": "piyush009@example.com",
       "password": "12345",
       "isVerified": false,
-      "createdAt": "2025-12-09T09:46:45.515Z"
+      "createdAt": "2025-12-09T11:22:46.072Z",
+      "sessions": [
+        1765279366068
+      ]
     }
   ]
 }
