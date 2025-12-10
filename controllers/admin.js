@@ -4,26 +4,26 @@ const path = require("path");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
-const filePath = path.join(__dirname,"..","data","admin.json");
+const filePath = path.join(__dirname, "..", "data", "admin.json");
 //console.log(filePath)
 
 const adminLogin = async (req, res) => {
     const { email, password } = req.body;
-    if (!email || !password) 
+    if (!email || !password)
         return res.status(400).json({ message: "Enter email and password" });
 
-    if (!fs.existsSync(filePath)) 
+    if (!fs.existsSync(filePath))
         return res.status(404).json({ message: "Admin data not found" });
 
     const data = fs.readFileSync(filePath, "utf-8");
     const realData = JSON.parse(data);
-    
+
     const admin = realData.admins.find(a => a.email === email);
-    if (!admin) 
+    if (!admin)
         return res.status(404).json({ message: "Admin not found" });
-  
+
     const match = await bcrypt.compare(password, admin.password);
-    if (!match) 
+    if (!match)
         return res.status(400).json({ message: "Wrong credentials" });
 
     if (!admin.sessions) admin.sessions = [];
@@ -37,7 +37,7 @@ const adminLogin = async (req, res) => {
     );
     res.cookie("token", token, {
         httpOnly: true,
-        maxAge:1000*60*60, 
+        maxAge: 1000 * 60 * 60,
     });
 
     fs.writeFileSync(filePath, JSON.stringify(realData, null, 2));
@@ -57,7 +57,7 @@ const adminRegister = async (req, res) => {
         }
         const data = fs.readFileSync(filePath, "utf-8");
         const realData = JSON.parse(data);
-    
+
         if (!realData.admins) realData.admins = [];
 
         const exists = realData.admins.find(a => a.email === email);
@@ -66,11 +66,11 @@ const adminRegister = async (req, res) => {
         let nextId = 1;
         if (realData.admins && realData.admins.length > 0) {
             const lastAdmin = realData.admins[realData.admins.length - 1];
-            nextId = Number(lastAdmin.id )+ 1;
+            nextId = Number(lastAdmin.id) + 1;
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-  
+
         const newAdmin = {
             id: nextId,
             username,
@@ -89,26 +89,86 @@ const adminRegister = async (req, res) => {
     }
 };
 
-const adminLogout=async (req,res)=>{
-        const data=req.cookies;
-        const token=data.token;
-        if (!token) return res.status(400).json({ message:"No token found"});
-        const payload=jwt.verify(token,"abcde123");
-        const id=payload.id;
-        const sessionId=payload.sessionId;
-    
-        const stringData=fs.readFileSync(filePath);
-        const realData=JSON.parse(stringData);
-    
-        const admin=realData.admins.find((u)=>u.id===id);
-        if (!admin) return res.status(404).json({ message:"Admin not found"});
-    
-        if (admin.sessions) {
-            admin.sessions = admin.sessions.filter(sid =>sid !== sessionId);
-        }
-        fs.writeFileSync(filePath, JSON.stringify(realData, null, 2));
-        res.clearCookie("token");
-        res.json({ message:"Logout successful"});
+const adminLogout = async (req, res) => {
+    const data = req.cookies;
+    const token = data.token;
+    if (!token) return res.status(400).json({ message: "No token found" });
+    const payload = jwt.verify(token, "abcde123");
+    const id = payload.id;
+    const sessionId = payload.sessionId;
+
+    const stringData = fs.readFileSync(filePath);
+    const realData = JSON.parse(stringData);
+
+    const admin = realData.admins.find((u) => u.id === id);
+    if (!admin) return res.status(404).json({ message: "Admin not found" });
+
+    if (admin.sessions) {
+        admin.sessions = admin.sessions.filter(sid => sid !== sessionId);
+    }
+    fs.writeFileSync(filePath, JSON.stringify(realData, null, 2));
+    res.clearCookie("token");
+    res.json({ message: "Logout successful" });
 }
 
-module.exports = { adminLogin ,adminRegister,adminLogout};
+const adminUpdate = async (req, res) => {
+    try {
+        const { updateUsername, emailId } = req.body;
+        if (!updateUsername || !emailId) {
+            return res.status(400).json({ message: "New username and new Email is required" });
+        }
+        const payload = req.admin;
+        const { id } = payload;
+        const data = fs.readFileSync(filePath, "utf-8");
+        const realData = JSON.parse(data);
+
+        const upduser = realData.admins.find((a) => a.id === id);
+        if (!upduser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        upduser.username = updateUsername;
+        upduser.email = emailId;
+
+
+        fs.writeFileSync(filePath, JSON.stringify(realData, null, 2));
+
+        return res.json({
+            message: "Username and email for admin updated successfully",
+            user: {
+                id: upduser.id,
+                username: upduser.username,
+                email: upduser.email,
+                token: upduser.token
+            }
+        })
+    } catch (err) {
+        return res.status(500).json({ message: "Some error occurred" })
+    }
+}
+
+const profile = async (req, res) => {
+    try {
+        const payload = req.admin;
+        const {id} = payload;
+
+        const data = fs.readFileSync(filePath, "utf-8");
+        const realData = JSON.parse(data);
+
+        const admin = realData.admins.find((a) => a.id === id);
+        if (!admin){
+            return res.status(400).json({message:"Admin cant be found"})
+        }
+        const {id:aid,email,username}=admin;
+        const details={id:aid,email,username}
+
+        res.json({
+            message:"Here is the user",
+            admin:details
+        })
+    } catch (err) {
+        return res.status(500).json({ message: "Some error occurred" })
+    }
+
+}
+
+module.exports = { adminLogin, adminRegister, adminLogout, adminUpdate, profile };
