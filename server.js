@@ -121,7 +121,7 @@ app.get("/profile", authUser, async (req, res) => {
 
         res.json({
             message: "Here is the user",
-            admin: details
+            admin: details 
         })
     } catch (err) {
         return res.status(500).json({ message: "Some error occurred" })
