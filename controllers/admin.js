@@ -5,6 +5,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const filePath = path.join(__dirname, "..", "data", "admin.json");
+const userPath = path.join(__dirname, "..", "data", "userdata.json");
+
 //console.log(filePath)
 
 const adminLogin = async (req, res) => {
@@ -149,25 +151,69 @@ const adminUpdate = async (req, res) => {
 const profile = async (req, res) => {
     try {
         const payload = req.admin;
-        const {id} = payload;
+        const { id } = payload;
 
         const data = fs.readFileSync(filePath, "utf-8");
         const realData = JSON.parse(data);
 
         const admin = realData.admins.find((a) => a.id === id);
-        if (!admin){
-            return res.status(400).json({message:"Admin cant be found"})
+        if (!admin) {
+            return res.status(400).json({ message: "Admin cant be found" })
         }
-        const {id:aid,email,username}=admin;
-        const details={id:aid,email,username}
+        const { id: aid, email, username } = admin;
+        const details = { id: aid, email, username }
 
         res.json({
-            message:"Here is the user",
-            admin:details
+            message: "Here is your profile",
+            admin: details
         })
     } catch (err) {
         return res.status(500).json({ message: "Some error occurred" })
     }
 }
 
-module.exports = { adminLogin, adminRegister, adminLogout, adminUpdate, profile };
+const getUserById = async (req, res) => {
+    try {
+        const id = req.params.id;
+        console.log(id);
+        if (!id) res.status(404).json({ message: "Please provide the id whose data you want to find" });
+        const data = fs.readFileSync(userPath,"utf-8");
+        const realData = JSON.parse(data);
+
+        const particularUser = realData.users.find((u) => u.id == id);
+        if (!particularUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const {id:uid,username,email}=particularUser;
+        const user={id:uid,username,email}
+        return res.json({
+            message: "User found",
+            user: user
+        });
+    } catch (err) {
+        return res.status(500).json({ message: "Some error occurred" })
+    }
+}
+
+const getAllUsers = async (req, res) => {
+    try{
+        const data=fs.readFileSync(userPath,"utf-8");
+        const realData=JSON.parse(data);
+
+        const allUsers=realData.users.map((user)=>({
+            id:user.id,
+            email:user.email,
+            username:user.username
+        }))
+
+        return res.json({
+            message:"Here are all the users",
+            users:allUsers
+        }) 
+    }catch(err){
+        return res.status(500).json({ message: "Some error occurred" })
+    }
+}
+
+module.exports = { adminLogin, adminRegister, adminLogout, adminUpdate, profile, getAllUsers, getUserById };

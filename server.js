@@ -57,8 +57,8 @@ app.post("/register", (req, res) => {
 
     async function user() {
         const { pass, otpHash } = await hashed(password, otp);
-        const newUser = { id: nextId, username, email, pass, sessions: [sessionId], otpHash, realotp: otp, isVerified: false };
-        // Add to data and save
+        const newUser = { id: nextId, username, email, pass, sessions: [sessionId], otpHash, realotp: otp, isVerified: false,isDisabled:false, isDeleted:false};
+        
         const sendData = { id: nextId, username, email, token };
         data.users.push(newUser);
         fs.writeFileSync(filePath, JSON.stringify(data, null, 2));

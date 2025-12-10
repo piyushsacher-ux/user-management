@@ -1,10 +1,7 @@
 const express=require("express");
 const appRouter=express.Router();
-const fs = require("fs");
 const path = require("path");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const { adminLogin, adminRegister,adminLogout,adminUpdate,profile} = require("../controllers/admin");
+const { adminLogin, adminRegister,adminLogout,adminUpdate,profile,getAllUsers,getUserById} = require("../controllers/admin");
 const {adminAuth}=require("../middlewares/adminMidd")
 
 const filePath = path.join(__dirname, "data/admin.json");
@@ -14,6 +11,8 @@ appRouter.post("/register",adminAuth,adminRegister)
 appRouter.post("/logout",adminAuth,adminLogout)
 appRouter.put("/updateData",adminAuth,adminUpdate)
 appRouter.get("/profile",adminAuth,profile)
+appRouter.get("/getAllUsers",adminAuth,getAllUsers)
+appRouter.get("/getUserById/:id",adminAuth,getUserById)
 
 
 module.exports={appRouter};
