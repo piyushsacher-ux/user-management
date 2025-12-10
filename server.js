@@ -34,12 +34,10 @@ app.post("/register", (req, res) => {
             try {
                 data = JSON.parse(raw);
             } catch (err) {
-
                 data = { users: [] };
             }
         }
     }
-
 
     const exists = data.users.find(u => u.email === email);
     if (exists) {
@@ -59,14 +57,13 @@ app.post("/register", (req, res) => {
 
     async function user() {
         const { pass, otpHash } = await hashed(password, otp);
-        const newUser = { id: nextId, username, email, pass, sessions: [sessionId], otpHash, realotp: otp, token, isVerified: false };
+        const newUser = { id: nextId, username, email, pass, sessions: [sessionId], otpHash, realotp: otp, isVerified: false };
         // Add to data and save
         const sendData = { id: nextId, username, email, token };
         data.users.push(newUser);
         fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 
         res.json({ message: "User registered successfully", user: sendData });
-
     }
     user()
 });
