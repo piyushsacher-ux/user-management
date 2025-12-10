@@ -195,7 +195,9 @@
       "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBpeXVzaHNhY2hlcjIxQGdhbWlsLmNvbSIsInNlc3Npb25JZCI6MTc2NTM1ODA3NjA3MCwiaWF0IjoxNzY1MzU4MDc2LCJleHAiOjE3NjUzNTgzNzZ9._48_7TwbPIEpfN76i9qDsd7nYyi98mb_Dq2bQY46GzE",
       "isVerified": true,
       "sessions": [
-        1765358135599
+        1765358135599,
+        1765361146957,
+        1765361489742
       ]
     }
   ]

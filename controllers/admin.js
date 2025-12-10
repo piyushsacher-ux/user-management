@@ -168,7 +168,6 @@ const profile = async (req, res) => {
     } catch (err) {
         return res.status(500).json({ message: "Some error occurred" })
     }
-
 }
 
 module.exports = { adminLogin, adminRegister, adminLogout, adminUpdate, profile };
