@@ -184,6 +184,19 @@
         1765344326664,
         1765345332310
       ]
+    },
+    {
+      "id": 20,
+      "username": "ustaadbrotherr",
+      "email": "piyushsacher21@gamil.com",
+      "pass": "$2b$10$rKrLjk53i9fnGD7D5azrhuAv9C7v8Vdywt9N/g31BL0b1FUUtF3du",
+      "otpHash": "$2b$10$BRcxQYzkVIXaQD/PehVGeub72EQ26opSE9yyvXe1gCxEyet5IvIpy",
+      "realotp": 428478,
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBpeXVzaHNhY2hlcjIxQGdhbWlsLmNvbSIsInNlc3Npb25JZCI6MTc2NTM1ODA3NjA3MCwiaWF0IjoxNzY1MzU4MDc2LCJleHAiOjE3NjUzNTgzNzZ9._48_7TwbPIEpfN76i9qDsd7nYyi98mb_Dq2bQY46GzE",
+      "isVerified": true,
+      "sessions": [
+        1765358135599
+      ]
     }
   ]
 }

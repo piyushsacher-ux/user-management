@@ -241,6 +241,39 @@ app.post("/logout",async(req,res)=>{
     res.json({ message:"Logout successful"});
 })
 
+app.put("/updateData",authUser,async(req,res)=>{
+    try{
+        const {updateUsername}=req.body;
+        if (!updateUsername) {
+            return res.status(400).json({ message:"New username is required" });
+        }
+        const payload=req.user;
+        const {id}=payload;
+        const data=fs.readFileSync(filePath,"utf-8");
+        const realData=JSON.parse(data);
+
+        const upduser=realData.users.find((u)=>u.id===id);
+        if (!upduser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        upduser.username=updateUsername;
+
+        fs.writeFileSync(filePath, JSON.stringify(realData, null, 2));
+
+        return res.json({
+            message:"Username updated successfully",
+            user: {
+                id: upduser.id,
+                username: upduser.username,
+                email: upduser.email,
+                token: upduser.token
+            }
+        })
+    }catch(err){
+        return res.status(500).json({message:"Some error occurred"})
+    }
+})
+
 
 
 
