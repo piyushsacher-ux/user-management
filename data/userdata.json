@@ -199,6 +199,21 @@
         1765361146957,
         1765362054206
       ]
+    },
+    {
+      "id": 21,
+      "username": "piyush12",
+      "email": "piyushsacher100@gamil.com",
+      "pass": "$2b$10$XfhSoSAjr.Yt6j74d.y/uu0Ea3X.DHwG0XoQhrj4Klw9pOfA1k1ba",
+      "otpHash": "$2b$10$E80lwNDVriSaj0c4nhUOPuYLhmAH1DSBMh4BPzzQeW.AS/LxeGuNe",
+      "realotp": 423209,
+      "isVerified": true,
+      "isDisabled": true,
+      "isDeleted": false,
+      "sessions": [
+        1765368291714,
+        1765369752847
+      ]
     }
   ]
 }

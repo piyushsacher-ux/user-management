@@ -216,4 +216,36 @@ const getAllUsers = async (req, res) => {
     }
 }
 
-module.exports = { adminLogin, adminRegister, adminLogout, adminUpdate, profile, getAllUsers, getUserById };
+const disableUser=async(req,res)=>{
+    try{
+        const uid = req.params.uid;
+        if (!uid) {
+            return res.status(400).json({ message:"Please provide a user ID to disable"});
+        }
+        const data = fs.readFileSync(userPath, "utf-8");
+        const realData = JSON.parse(data);
+
+        const disableUser = realData.users.find(user=>user.id==uid);
+        if (!disableUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        disableUser.isDisabled = true;
+
+        fs.writeFileSync(userPath, JSON.stringify(realData, null, 2));
+
+        return res.json({
+            message: "User disabled successfully",
+            user: {
+                id: disableUser.id,
+                username: disableUser.username,
+                email: disableUser.email,
+                disabled: disableUser.disabled
+            }
+        });
+    }
+    catch(err){
+        return res.status(500).json({ message: "Some error occurred" })
+    }
+}
+
+module.exports = { adminLogin, adminRegister, adminLogout, adminUpdate, profile, getAllUsers, getUserById ,disableUser};
