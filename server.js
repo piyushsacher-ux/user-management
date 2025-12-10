@@ -4,18 +4,23 @@ const path = require("path");
 const jwt = require("jsonwebtoken");
 const app = express();
 const cookieParser = require("cookie-parser");
-app.use(express.json());
-app.use(cookieParser())
+
 require("dotenv").config()
-const bcrypt = require("bcrypt")
+const {authUser}=require("./middlewares/middleware")
+const bcrypt = require("bcrypt");
+const { appRouter } = require("./routes/admin");
 const PORT = process.env.PORT || 3000;
 const dataDir = path.join(__dirname, "data");
+
+
+app.use(express.json());
+app.use(cookieParser())
 
 
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
 
 const filePath = path.join(dataDir, "userdata.json");
-
+app.use("/admin",appRouter)
 app.post("/register", (req, res) => {
     const { username, email, password } = req.body;
 
@@ -105,9 +110,14 @@ app.post("/login",async(req,res)=>{
 
     const data=fs.readFileSync(filePath,"utf-8");
     const realData=JSON.parse(data);
+    const adminData = JSON.parse(fs.readFileSync("data/admin.json", "utf-8"));
 
-    const user=realData.users.find((u)=>u.email===email);
-    if(!user) return res.status(404).json({message:"User not found"});
+    // Check if email exists in users or admins
+    let user = realData.users.find(u => u.email === email);
+    let role = "user";
+
+
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     if(!user.isVerified) return res.status(403).json({ message:"User not verified. Verify OTP first."});
 
@@ -122,7 +132,7 @@ app.post("/login",async(req,res)=>{
     
     user.sessions.push(sessionId);
 
-    const token = jwt.sign({email:user.email,id:user.id,sessionId}, "abcde123", {
+    const token = jwt.sign({email:user.email,id:user.id,sessionId,role}, "abcde123", {
         expiresIn: "1h"
     });
     res.cookie("token", token, {
@@ -138,7 +148,7 @@ app.post("/login",async(req,res)=>{
     });
 })
 
-app.post("/forgot-password", async (req, res) => {
+app.post("/forgot-password",authUser, async (req, res) => {
     const {email} = req.body;
     if(!email) return res.status(400).json({ message: "Email is required" });
 
@@ -148,6 +158,7 @@ app.post("/forgot-password", async (req, res) => {
     const user=realData.users.find(u => u.email === email);
     if (!user) return res.status(404).json({message:"User not found"});
 
+    //if bychance they exist before
     delete user.canResetPassword;
     delete user.resetOtpHash;
     delete user.resetOtpExpire;
@@ -167,7 +178,7 @@ app.post("/forgot-password", async (req, res) => {
     });
 });
 
-app.post("/verify-reset-otp", async (req, res) => {
+app.post("/verify-reset-otp",authUser, async (req, res) => {
     const {email,otp} = req.body;
     if (!email || !otp)
         return res.status(400).json({ message: "Email and OTP required" });
@@ -189,7 +200,7 @@ app.post("/verify-reset-otp", async (req, res) => {
     res.json({ message: "OTP verified. You can reset your password now." });
 });
 
-app.post("/reset-password",async(req,res)=>{
+app.post("/reset-password",authUser,async(req,res)=>{
     const {email,password}=req.body;
     if(!email || !password) return res.status(400).json({message:"Email and password required"});
     const data=fs.readFileSync(filePath,"utf-8");
@@ -207,8 +218,6 @@ app.post("/reset-password",async(req,res)=>{
     fs.writeFileSync(filePath, JSON.stringify(realData, null, 2));
     res.json({ message:"Password reset successfully"});
 })
-
-
 
 app.post("/logout",async(req,res)=>{
     const data=req.cookies;
@@ -230,8 +239,9 @@ app.post("/logout",async(req,res)=>{
     fs.writeFileSync(filePath, JSON.stringify(realData, null, 2));
     res.clearCookie("token");
     res.json({ message:"Logout successful"});
-
 })
+
+
 
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

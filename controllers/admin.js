@@ -1,0 +1,114 @@
+
+const fs = require("fs");
+const path = require("path");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
+const filePath = path.join(__dirname,"..","data","admin.json");
+//console.log(filePath)
+
+const adminLogin = async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) 
+        return res.status(400).json({ message: "Enter email and password" });
+
+    if (!fs.existsSync(filePath)) 
+        return res.status(404).json({ message: "Admin data not found" });
+
+    const data = fs.readFileSync(filePath, "utf-8");
+    const realData = JSON.parse(data);
+    
+    const admin = realData.admins.find(a => a.email === email);
+    if (!admin) 
+        return res.status(404).json({ message: "Admin not found" });
+  
+    const match = await bcrypt.compare(password, admin.password);
+    if (!match) 
+        return res.status(400).json({ message: "Wrong credentials" });
+
+    if (!admin.sessions) admin.sessions = [];
+    const sessionId = Date.now();
+    admin.sessions.push(sessionId);
+
+    const token = jwt.sign(
+        { email: admin.email, id: admin.id, sessionId, role: "admin" },
+        "abcde123",
+        { expiresIn: "1h" }
+    );
+    res.cookie("token", token, {
+        httpOnly: true,
+        maxAge:1000*60*60, 
+    });
+
+    fs.writeFileSync(filePath, JSON.stringify(realData, null, 2));
+
+    res.cookie("token", token, { httpOnly: true, maxAge: 1000 * 60 * 60 });
+    res.json({ message: "Admin login successful", token });
+};
+
+const adminRegister = async (req, res) => {
+    try {
+        const { email, password, username } = req.body;
+        if (!email || !password || !username)
+            return res.status(400).json({ message: "Email, username and password required" });
+
+        if (!fs.existsSync(filePath)) {
+            fs.writeFileSync(filePath, JSON.stringify({ admins: [] }, null, 2));
+        }
+        const data = fs.readFileSync(filePath, "utf-8");
+        const realData = JSON.parse(data);
+    
+        if (!realData.admins) realData.admins = [];
+
+        const exists = realData.admins.find(a => a.email === email);
+        if (exists) return res.status(400).json({ message: "Email already exists" });
+
+        let nextId = 1;
+        if (realData.admins && realData.admins.length > 0) {
+            const lastAdmin = realData.admins[realData.admins.length - 1];
+            nextId = Number(lastAdmin.id )+ 1;
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+  
+        const newAdmin = {
+            id: nextId,
+            username,
+            email,
+            password: hashedPassword,
+            sessions: [],
+        };
+
+        realData.admins.push(newAdmin);
+        fs.writeFileSync(filePath, JSON.stringify(realData, null, 2));
+
+        res.status(201).json({ message: "Admin registered successfully", admin: { id: nextId, email, username } });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+const adminLogout=async (req,res)=>{
+        const data=req.cookies;
+        const token=data.token;
+        if (!token) return res.status(400).json({ message:"No token found"});
+        const payload=jwt.verify(token,"abcde123");
+        const id=payload.id;
+        const sessionId=payload.sessionId;
+    
+        const stringData=fs.readFileSync(filePath);
+        const realData=JSON.parse(stringData);
+    
+        const admin=realData.admins.find((u)=>u.id===id);
+        if (!admin) return res.status(404).json({ message:"Admin not found"});
+    
+        if (admin.sessions) {
+            admin.sessions = admin.sessions.filter(sid =>sid !== sessionId);
+        }
+        fs.writeFileSync(filePath, JSON.stringify(realData, null, 2));
+        res.clearCookie("token");
+        res.json({ message:"Logout successful"});
+}
+
+module.exports = { adminLogin ,adminRegister,adminLogout};

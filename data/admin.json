@@ -1,9 +1,24 @@
 {
-    "admin":[
-        {
-            "id":"1",
-            "email":"admin@gmail.com",
-            "password":"12345"
-        }
-    ]
+  "admins": [
+    {
+      "id": "1",
+      "email": "admin@gmail.com",
+      "password": "$2b$10$XtyRQBQ7A/pEGHBjv.nXb.YG5EoQhxWR0OcBUOifcEsnf7m9bSBp2",
+      "username": "admin1",
+      "sessions": [
+        1765352635244,
+        1765353551748,
+        1765353650337,
+        1765353659643,
+        1765353781757
+      ]
+    },
+    {
+      "id": 2,
+      "username": "admin2",
+      "email": "admin2@gmail.com",
+      "password": "$2b$10$2Dkv8HIyRsXfFZgGLxhQqON1L8i2CuQ3dFPdH8N2i1LZ/ojyLU/2m",
+      "sessions": []
+    }
+  ]
 }
