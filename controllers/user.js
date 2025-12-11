@@ -139,7 +139,7 @@ const login = async (req, res) => {
 
     user.sessions.push(sessionId);
 
-    const token = jwt.sign({ email: user.email, id: user.id, sessionId, role }, "abcde123", {
+    const token = jwt.sign({ email: user.email, id: user.id, sessionId, role, type:"login"}, "abcde123", {
         expiresIn: "1h"
     });
     res.cookie("token", token, {
@@ -164,7 +164,21 @@ const forgotPassword = async (req, res) => {
     const user = realData.users.find(u => u.email === email);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    //const loginToken=jwt.verify
+
+    let role="user";
+    const sessionId = Date.now();
+    const forgotPasswordToken=jwt.sign({ email: user.email, id: user.id, sessionId, role, type:"forgotPassword"}, "abcde123", {
+        expiresIn: "5m"
+    });
+
+    res.cookie("token", forgotPasswordToken, {
+        httpOnly: true,
+        maxAge: 1000 * 60 * 5,
+    });
+
     //if bychance they exist before
+    if(user.canResetPassword && user.resetOtpHash && user.resetOtpExpire)
     delete user.canResetPassword;
     delete user.resetOtpHash;
     delete user.resetOtpExpire;
@@ -186,9 +200,10 @@ const forgotPassword = async (req, res) => {
 
 
 const verifyResetOTP = async (req, res) => {
-    const { email, otp } = req.body;
-    if (!email || !otp)
-        return res.status(400).json({ message: "Email and OTP required" });
+    const { email, otp ,password} = req.body;
+    
+    if (!email || !otp || !password)
+        return res.status(400).json({ message: "Email , OTP and Password required" });
 
     const data = fs.readFileSync(filePath, "utf-8");
     const realData = JSON.parse(data);
@@ -199,32 +214,37 @@ const verifyResetOTP = async (req, res) => {
     if (Date.now() > user.resetOtpExpire)
         return res.status(400).json({ message: "OTP expired" });
 
+    console.log(user.resetOtpHash)
     const match = await bcrypt.compare(otp.toString(), user.resetOtpHash);
     if (!match) return res.status(400).json({ message: "Invalid OTP" });
 
-    user.canResetPassword = true;
-    fs.writeFileSync(filePath, JSON.stringify(realData, null, 2));
-    res.json({ message: "OTP verified. You can reset your password now." });
-}
-
-const resetPassword = async (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ message: "Email and password required" });
-    const data = fs.readFileSync(filePath, "utf-8");
-    const realData = JSON.parse(data);
-
-    const user = realData.users.find(u => u.email === email);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    if (!user.canResetPassword) return res.status(404).json({ message: "Cannot reset password" });
-
-    user.pass = await bcrypt.hash(password, 10);
+    console.log('password', password)
+    user.pass = await bcrypt.hash(password.toString(), 10);
     delete user.resetOtpHash;
     delete user.resetOtpExpire;
     delete user.canResetPassword;
     fs.writeFileSync(filePath, JSON.stringify(realData, null, 2));
-    res.json({ message: "Password reset successfully" });
+    return res.json({ message: "Password reset successfully" });
 }
+
+// const resetPassword = async (req, res) => {
+//     const { email, password } = req.body;
+//     if (!email || !password) return res.status(400).json({ message: "Email and password required" });
+//     const data = fs.readFileSync(filePath, "utf-8");
+//     const realData = JSON.parse(data);
+
+//     const user = realData.users.find(u => u.email === email);
+//     if (!user) return res.status(404).json({ message: "User not found" });
+
+//     if (!user.canResetPassword) return res.status(404).json({ message: "Cannot reset password" });
+
+//     user.pass = await bcrypt.hash(password, 10);
+//     delete user.resetOtpHash;
+//     delete user.resetOtpExpire;
+//     delete user.canResetPassword;
+//     fs.writeFileSync(filePath, JSON.stringify(realData, null, 2));
+//     res.json({ message: "Password reset successfully" });
+// }
 
 const logout = async (req, res) => {
     const data = req.cookies;
@@ -280,4 +300,4 @@ const updateData = async (req, res) => {
     }
 }
 
-module.exports={register,verifyOTP,profile,login,forgotPassword,verifyResetOTP,resetPassword,logout,updateData}
+module.exports={register,verifyOTP,profile,login,forgotPassword,verifyResetOTP,logout,updateData}

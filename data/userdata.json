@@ -235,7 +235,7 @@
       "id": 23,
       "username": "piyush1234",
       "email": "piyushsacher90@gamil.com",
-      "pass": "$2b$10$erK3fHoNnqYxfJJRuT/b1umOLwguoXZxNEuznRVEa.HSJ9ClCYglm",
+      "pass": "$2b$10$1ez9nBseMaZBNMy.j2EjxO.v9jJlribp5ci.ce8Z0/5RoSQvAgxgu",
       "otpHash": "$2b$10$ASU7KGHI5ajfHSjdpqMPduw6XIdxN7rdBRV8x5RjY7g0eg.5TV0mC",
       "realotp": 148606,
       "isVerified": true,
@@ -244,8 +244,18 @@
       "sessions": [
         1765431269301,
         1765431271351,
-        1765431271754
-      ]
+        1765431271754,
+        1765435315659,
+        1765436088340,
+        1765436503952,
+        1765436632181,
+        1765437053156,
+        1765437090045,
+        1765437308882,
+        1765437596564
+      ],
+      "resetOtpHash": "$2b$10$ImJCxlh6TngllJkim1s9LO2y9RlSM8sIFQ9fgR.uMb4gUIowbo.ga",
+      "resetOtpExpire": 1765438892489
     }
   ]
 }
