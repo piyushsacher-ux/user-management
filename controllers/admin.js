@@ -210,12 +210,17 @@ const getAllUsers = async (req, res) => {
         const data = fs.readFileSync(userPath, "utf-8");
         const realData = JSON.parse(data);
 
-        const allUsers = realData.users.map((user) => ({
-            id: user.id,
-            email: user.email,
-            username: user.username
-        }))
-
+        let allUsers=[];
+        realData.users.forEach((user)=>{
+            if(!user.isDeleted){
+                allUsers.push({
+                    id: user.id,
+                    email: user.email,
+                    username: user.username
+                })
+            }
+        })
+             
         return res.json({
             message: "Here are all the users",
             users: allUsers
