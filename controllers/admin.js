@@ -399,7 +399,7 @@ const getUserActivity=async(req,res)=>{
 
         const user = realData.users.find(u => u.id == uid);
         if (!user) return res.status(404).json({ message: "User not found" });
-        
+
         res.json({
             id: user.id,
             username: user.username,
@@ -412,5 +412,43 @@ const getUserActivity=async(req,res)=>{
     }
 }
 
+const adminDeleteUser = async (req, res) => {
+    try {
+        const uid = req.params.uid;
+        if (!uid) {
+            return res.status(400).json({ message: "Please provide a user ID" });
+        }
 
-module.exports = { adminLogin, adminRegister, adminLogout, adminUpdate, profile, getAllUsers, getUserById, disableUser, forceLogOut, role,updatePermissions, adminUpdateUserData,getUserActivity};
+        const data = fs.readFileSync(userPath, "utf-8");
+        const realData = JSON.parse(data);
+
+        const payload=req.admin;
+
+        if(!payload.permissions.canDeleteUser) return res.status(401).json({message:"You cannot Delete any user as you dont have permissions"})
+
+        const user = realData.users.find(u => u.id == uid);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (user.isDeleted) {
+            return res.status(400).json({ message: "User is already deleted" });
+        }
+
+        user.isDeleted = true;
+
+        user.isDisabled = true;
+        if (user.sessions) user.sessions = [];
+
+        fs.writeFileSync(userPath, JSON.stringify(realData, null, 2));
+
+        res.status(200).json({ message: "User deleted successfully (soft delete)" });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+module.exports = { adminLogin, adminRegister, adminLogout, adminUpdate, profile, getAllUsers, getUserById, disableUser, forceLogOut, role,updatePermissions, adminUpdateUserData,getUserActivity,adminDeleteUser};

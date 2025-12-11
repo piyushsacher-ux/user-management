@@ -26,7 +26,8 @@
         1765447417351,
         1765447880196,
         1765450078120,
-        1765450630080
+        1765450630080,
+        1765455042000
       ]
     },
     {
@@ -88,12 +89,13 @@
         1765450609470,
         1765450657400,
         1765450848162,
-        1765453586508
+        1765453586508,
+        1765455078120
       ],
       "permissions": {
         "canDisableUser": true,
         "canUpdateUser": true,
-        "canDeleteUser": false,
+        "canDeleteUser": true,
         "canForceLogOutUser": false
       }
     }

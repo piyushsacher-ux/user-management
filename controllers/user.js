@@ -115,6 +115,7 @@ const login = async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ message: "Email and password required" });
 
+
     const data = fs.readFileSync(filePath, "utf-8");
     const realData = JSON.parse(data);
     const adminData = JSON.parse(fs.readFileSync("data/admin.json", "utf-8"));
@@ -122,11 +123,10 @@ const login = async (req, res) => {
     // Check if email exists in users or admins
     let user = realData.users.find(u => u.email === email);
     let role = "user";
-
-
     if (!user) return res.status(404).json({ message: "User not found" });
 
     if (!user.isVerified) return res.status(403).json({ message: "User not verified. Verify OTP first." });
+    if(user.isDeleted || user.isDisabled) return res.status(403).json({ message: "Sorry you cant login" });
 
     const passMatch = await bcrypt.compare(password, user.pass);
     if (!passMatch) return res.status(400).json({ message: "Wrong crendentials" });

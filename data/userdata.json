@@ -278,16 +278,9 @@
       "otpHash": "$2b$10$cIWdzcul9kJC1tRKwrLtXO/59kn.fmENW4YyLNefvWGZGRDFFm28C",
       "realotp": 575859,
       "isVerified": true,
-      "isDisabled": false,
-      "isDeleted": false,
-      "sessions": [
-        1765453545316,
-        1765453546145,
-        1765453546653,
-        1765453547185,
-        1765453547540,
-        1765453548729
-      ],
+      "isDisabled": true,
+      "isDeleted": true,
+      "sessions": [],
       "activity": [
         {
           "type": "login",
