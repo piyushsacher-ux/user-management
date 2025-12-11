@@ -20,7 +20,13 @@
         1765427926700,
         1765427928710,
         1765429351679,
-        1765440491719
+        1765440491719,
+        1765446430348,
+        1765446974832,
+        1765447417351,
+        1765447880196,
+        1765450078120,
+        1765450630080
       ]
     },
     {
@@ -42,6 +48,53 @@
       "email": "admin4@gmail.com",
       "password": "$2b$10$EV8ppuca5QWOrPivqXylYerCBtBvpFxb9dnT05LVYNrJQYfTqXVVi",
       "sessions": []
+    },
+    {
+      "id": 4,
+      "username": "admin5",
+      "email": "admin5@gmail.com",
+      "password": "$2b$10$H1QgKJPAi.bzIUgTnw20UOdsKNEpGyDKPhwLHD8UvsBMOC0LDLpda",
+      "sessions": [],
+      "permissions": {
+        "canDisableUser": false,
+        "canUpdateUser": false,
+        "canForceLogOutUser": false
+      }
+    },
+    {
+      "id": 5,
+      "username": "admin6",
+      "email": "admin6@gmail.com",
+      "password": "$2b$10$IBzof7rK2wd.WJy9fRorHOh5MXZs1mhKwSoMIbHvAWP7HnI9LVvmy",
+      "sessions": [
+        1765447021303,
+        1765447154620
+      ],
+      "permissions": {
+        "canDisableUser": true,
+        "canUpdateUser": false,
+        "canDeleteUser": false,
+        "canForceLogOutUser": false
+      }
+    },
+    {
+      "id": 6,
+      "username": "admin7",
+      "email": "admin7@gmail.com",
+      "password": "$2b$10$fw0X2wG6ZAgipOL6Xo9vuOfFIcGRaVWyhm6BytCVIyw4xNvVJoXo6",
+      "sessions": [
+        1765447912598,
+        1765450061826,
+        1765450609470,
+        1765450657400,
+        1765450848162
+      ],
+      "permissions": {
+        "canDisableUser": true,
+        "canUpdateUser": true,
+        "canDeleteUser": false,
+        "canForceLogOutUser": false
+      }
     }
   ]
 }

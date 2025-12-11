@@ -10,7 +10,7 @@ const adminAuth = (req, res, next) => {
 
     try {
         const payload = jwt.verify(token, "abcde123");
-        if (payload.role !== "admin") return res.status(403).json({ message: "Admin access only" });
+        if (payload.role !== "admin" ) return res.status(403).json({ message: "Admin access only" });
         req.admin = payload;
         next();
     } catch (err) {

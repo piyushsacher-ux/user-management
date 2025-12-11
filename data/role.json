@@ -7,6 +7,13 @@
         "Add User",
         "Read User"
       ]
+    },
+    {
+      "id": 2,
+      "name": "admin",
+      "permission": [
+        "Disable User"
+      ]
     }
   ]
 }

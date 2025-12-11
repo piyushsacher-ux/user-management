@@ -233,8 +233,7 @@
     },
     {
       "id": 23,
-      "username": "piyush1234",
-      "email": "piyushsacher90@gamil.com",
+      "username": "BOOOMMM",
       "pass": "$2b$10$1ez9nBseMaZBNMy.j2EjxO.v9jJlribp5ci.ce8Z0/5RoSQvAgxgu",
       "otpHash": "$2b$10$ASU7KGHI5ajfHSjdpqMPduw6XIdxN7rdBRV8x5RjY7g0eg.5TV0mC",
       "realotp": 148606,
@@ -256,6 +255,20 @@
       ],
       "resetOtpHash": "$2b$10$ImJCxlh6TngllJkim1s9LO2y9RlSM8sIFQ9fgR.uMb4gUIowbo.ga",
       "resetOtpExpire": 1765438892489
+    },
+    {
+      "id": 24,
+      "username": "BOOOMMMmmmmmmmmmmmmmmmmmm",
+      "email": "piyushmmmmmmegthefg@gmail.com",
+      "pass": "$2b$10$lLy6JskwlTdekxclGclddeHlBlac5HMK/3ZBMstRNN7T9hPbzF15W",
+      "otpHash": "$2b$10$IhmJ9IozeT7c.ZnTkjHl7.nAjCx6UIHdBuHl9vR8coMvqBwqsmgSC",
+      "realotp": 710150,
+      "isVerified": true,
+      "isDisabled": false,
+      "isDeleted": false,
+      "sessions": [
+        1765450825228
+      ]
     }
   ]
 }

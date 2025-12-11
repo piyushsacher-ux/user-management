@@ -21,6 +21,7 @@ const adminLogin = async (req, res) => {
     const realData = JSON.parse(data);
 
     const admin = realData.admins.find(a => a.email === email);
+    console.log(admin)
 
     if (!admin)
         return res.status(404).json({ message: "Admin not found" });
@@ -36,7 +37,7 @@ const adminLogin = async (req, res) => {
     admin.sessions.push(sessionId);
 
     const token = jwt.sign(
-        { email: admin.email, id: admin.id, sessionId, role: superAdmin ? "superAdmin" : "admin" },
+        { email: admin.email, id: admin.id, sessionId, role: superAdmin ? "superAdmin" : "admin",permissions:admin.permissions},
         "abcde123",
         { expiresIn: "1h" }
     );
@@ -82,6 +83,12 @@ const adminRegister = async (req, res) => {
             email,
             password: hashedPassword,
             sessions: [],
+            permissions:{
+                canDisableUser:false,
+                canUpdateUser:false,
+                canDeleteUser:false,
+                canForceLogOutUser:false,
+            }
         };
 
         realData.admins.push(newAdmin);
@@ -226,6 +233,9 @@ const disableUser = async (req, res) => {
         }
         const data = fs.readFileSync(userPath, "utf-8");
         const realData = JSON.parse(data);
+        const payload=req.admin;
+
+        if(!payload.permissions.canDisableUser) return res.status(401).json({message:"You cannot disable any user as you dont have permissions"})
 
         const disableUser = realData.users.find(user => user.id == uid);
         if (!disableUser) {
@@ -258,6 +268,10 @@ const forceLogOut = async (req, res) => {
         }
         const data = fs.readFileSync(userPath, "utf-8");
         const realData = JSON.parse(data);
+
+        const payload=req.admin;
+
+        if(!payload.permissions.canForceLogOutUser) return res.status(401).json({message:"You cannot forceLogOut any user as you dont have permissions"})
         const forceLogOutUser = realData.users.find(user => user.id == uid);
         if (!forceLogOutUser) {
             return res.status(404).json({ message: "User not found" });
@@ -284,33 +298,41 @@ const forceLogOut = async (req, res) => {
 
 const role = async (req, res) => {
     try {
-        const pathOfFile = path.join(__dirname, "..", "data", "role.json");
-        const { name, permission } = req.body;
+      const { email, permissions } = req.body;
+  
+      if (!email || !permissions) {
+        return res.status(400).json({ message: "email and permission object required" });
+      }
+  
+    
+      const data = fs.readFileSync(filePath, "utf-8");
+      const realData = JSON.parse(data);
+  
+      const admin = realData.admins.find(a => a.email === email);
+      if (!admin) {
+        return res.status(404).json({ message: "Admin not found" });
+      }
 
-        if (!name || !Array.isArray(permission)) {
-            return res.status(400).json({ message: "Name and permission array required" });
-        }
+      if (typeof permissions !== "object") {
+        return res.status(400).json({ message: "permission must be an object or array" });
+      }
 
-        let data = { roles: [] };
-        if (fs.existsSync(pathOfFile)) {
-            const raw = fs.readFileSync(pathOfFile, "utf-8");
-            if (raw.trim()) {
-                data = JSON.parse(raw);
-            }
+      admin.permissions = permissions;
+      fs.writeFileSync(filePath, JSON.stringify(realData, null, 2));
+  
+      return res.json({
+        message: "User Permission updated successfully",
+        admin: {
+          email: admin.email,
+          permission: admin.permissions
         }
-        const nextId = data.roles.length ? data.roles[data.roles.length - 1].id + 1 : 1;
-        const newRole = {
-            id: nextId,
-            name,
-            permission
-        };
-        data.roles.push(newRole);
-        fs.writeFileSync(pathOfFile, JSON.stringify(data, null, 2));
-        res.status(201).json({ message: "Role added successfully", role: newRole });
+      });
+  
     } catch (err) {
-        res.status(500).json({ message: "Server error" });
+      console.log(err);
+      res.status(500).json({ message: "Server error" });
     }
-};
+  };
 
 
 // const updateRole=async(req,res)=>{
@@ -321,57 +343,53 @@ const role = async (req, res) => {
 //     }
 // }
 
-const sendRoles=async(req,res)=>{
-    try{
-        const pathOfFile = path.join(__dirname, "..", "data", "role.json");
-        const data=fs.readFileSync(pathOfFile,"utf-8");
-        const realData=JSON.parse(data);
+// const sendRoles=async(req,res)=>{
+//     try{
+//         const pathOfFile = path.join(__dirname, "..", "data", "role.json");
+//         const data=fs.readFileSync(pathOfFile,"utf-8");
+//         const realData=JSON.parse(data);
 
-        const sendData=realData.roles.map((obj)=>({
-            id:obj.id,
-            name:obj.name
-        }))
+//         const sendData=realData.roles.map((obj)=>({
+//             id:obj.id,
+//             name:obj.name
+//         }))
 
-        res.status(200).json({message:"Here is your data",
-            sendData
-        }
-    );
+//         res.status(200).json({message:"Here is your data",
+//             sendData
+//         }
+//     );
 
-    }catch(err){
-        res.status(500).json({ message: "Server error" });
-    }
-}
+//     }catch(err){
+//         res.status(500).json({ message: "Server error" });
+//     }
+// }
 
-const sendRoleById=async(req,res)=>{
-    try{
-        const pathOfFile = path.join(__dirname, "..", "data", "role.json");
-        const rid=req.params.rid;
-        const data=fs.readFileSync(pathOfFile,"utf-8");
-        const realData=JSON.parse(data);
+// const sendRoleById=async(req,res)=>{
+//     try{
+//         const pathOfFile = path.join(__dirname, "..", "data", "role.json");
+//         const rid=req.params.rid;
+//         const data=fs.readFileSync(pathOfFile,"utf-8");
+//         const realData=JSON.parse(data);
 
-        if (!realData.roles) realData.roles = [];
+//         if (!realData.roles) realData.roles = [];
 
-        const dataRole=realData.roles.find(r=>r.id==rid)
-        if(!dataRole) return res.status(401).json({message:"Sorry this id does not exist"})
+//         const dataRole=realData.roles.find(r=>r.id==rid)
+//         if(!dataRole) return res.status(401).json({message:"Sorry this id does not exist"})
 
-        res.status(200).json({message:"Here is your data",
-            dataRole
-        }
-    );
-    }catch(err){
-        res.status(500).json({ message: "Server error" });
-    }
-}
+//         res.status(200).json({message:"Here is your data",
+//             dataRole
+//         }
+//     );
+//     }catch(err){
+//         res.status(500).json({ message: "Server error" });
+//     }
+// }
 
 const updatePermissions=async(req,res)=>{
     try{
-        const {name,permission}=req.body;
-        const pathOfFile = path.join(__dirname, "..", "data", "role.json");
-        if (!name || !Array.isArray(permission)) {
-            return res.status(400).json({ message: "Name and permission array required" });
-        }
-
-        if (!fs.existsSync(pathOfFile)) {
+        const {permissions}=req.body;
+        
+        if (!fs.existsSync(filePath)) {
             return res.status(404).json({ message: "Role data not found" });
         }
         const rid=req.params.rid;
@@ -380,18 +398,49 @@ const updatePermissions=async(req,res)=>{
 
         if (!realData.roles) realData.roles = [];
 
-        const dataRole=realData.roles.find(r=>r.id==rid)
+        const dataRole=realData.admins.find(r=>r.id==rid)
         if(!dataRole) return res.status(401).json({message:"Sorry this id does not exist"})
 
-        dataRole.name=name;
-        dataRole.permission=permission
+        dataRole.permissions=permissions
 
-        fs.writeFileSync(pathOfFile, JSON.stringify(realData, null, 2));
+        fs.writeFileSync(filePath, JSON.stringify(realData, null, 2));
         res.status(200).json({ message: "Role updated successfully", role: dataRole });
     }catch(err){
         res.status(500).json({ message: "Server error" });
     }
 }
 
+const adminUpdateUserData=async(req,res)=>{
+    try {
+        const {username,emailId}=req.body;
+        const uid = req.params.uid;
+        if (!uid) {
+            return res.status(400).json({ message: "Please provide a user ID to force Log Out" });
+        }
+        const data = fs.readFileSync(userPath, "utf-8");
+        const realData = JSON.parse(data);
 
-module.exports = { adminLogin, adminRegister, adminLogout, adminUpdate, profile, getAllUsers, getUserById, disableUser, forceLogOut, role,sendRoles ,sendRoleById,updatePermissions};
+        const payload=req.admin;
+
+        if(!payload.permissions.canUpdateUser) return res.status(401).json({message:"You cannot Update any user as you dont have permissions"})
+        const UpdateUser = realData.users.find(user => user.id == uid);
+        if (!UpdateUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        UpdateUser.username=username;
+        UpdateUser.email=emailId
+
+        fs.writeFileSync(userPath, JSON.stringify(realData, null, 2));
+
+        return res.json({
+            message: "User Updated successfully",
+        });
+
+    } catch (err) {
+        return res.status(500).json({ message: "Some error occurred" })
+    }
+}
+
+
+module.exports = { adminLogin, adminRegister, adminLogout, adminUpdate, profile, getAllUsers, getUserById, disableUser, forceLogOut, role,updatePermissions, adminUpdateUserData};
