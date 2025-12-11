@@ -14,7 +14,12 @@
         1765359552858,
         1765362110441,
         1765365896039,
-        1765368326046
+        1765368326046,
+        1765426717802,
+        1765427925035,
+        1765427926700,
+        1765427928710,
+        1765429351679
       ]
     },
     {
@@ -22,6 +27,19 @@
       "username": "admin2",
       "email": "admin2@gmail.com",
       "password": "$2b$10$2Dkv8HIyRsXfFZgGLxhQqON1L8i2CuQ3dFPdH8N2i1LZ/ojyLU/2m",
+      "sessions": [
+        1765427791289,
+        1765428735436,
+        1765428736817,
+        1765428737616,
+        1765428738246
+      ]
+    },
+    {
+      "id": 3,
+      "username": "admin2",
+      "email": "admin4@gmail.com",
+      "password": "$2b$10$EV8ppuca5QWOrPivqXylYerCBtBvpFxb9dnT05LVYNrJQYfTqXVVi",
       "sessions": []
     }
   ]

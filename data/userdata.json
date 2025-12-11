@@ -183,7 +183,10 @@
         1765341252777,
         1765344326664,
         1765345332310
-      ]
+      ],
+      "resetOtpHash": "$2b$10$qP85MdCzCpGhlAIeaOaHg.a5LesLe18AH4BIRmcgsPE93AH02aXmK",
+      "resetOtpExpire": 1765432771381,
+      "canResetPassword": true
     },
     {
       "id": 20,
@@ -212,7 +215,36 @@
       "isDeleted": false,
       "sessions": [
         1765368291714,
-        1765369752847
+        1765369752847,
+        1765426469620
+      ]
+    },
+    {
+      "id": 22,
+      "username": "piyush1234",
+      "email": "piyushsacher1000@gamil.com",
+      "pass": "$2b$10$AT6Ul3oNinTeUBsGZazF8.m1eUOHt7ppCMyfnMvSrtJmw7Y05EFiy",
+      "otpHash": "$2b$10$hIvYH3vcaY/LU74K6qPNN.1sRHAWDW4abtuPlnETMomJX0LtpnbZK",
+      "realotp": 158647,
+      "isVerified": true,
+      "isDisabled": false,
+      "isDeleted": false,
+      "sessions": []
+    },
+    {
+      "id": 23,
+      "username": "piyush1234",
+      "email": "piyushsacher90@gamil.com",
+      "pass": "$2b$10$erK3fHoNnqYxfJJRuT/b1umOLwguoXZxNEuznRVEa.HSJ9ClCYglm",
+      "otpHash": "$2b$10$ASU7KGHI5ajfHSjdpqMPduw6XIdxN7rdBRV8x5RjY7g0eg.5TV0mC",
+      "realotp": 148606,
+      "isVerified": true,
+      "isDisabled": false,
+      "isDeleted": false,
+      "sessions": [
+        1765431269301,
+        1765431271351,
+        1765431271754
       ]
     }
   ]

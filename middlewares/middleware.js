@@ -17,6 +17,8 @@ const authUser = (req, res, next) => {
         if(!user) return res.status(403).json({message:"User does not exist"});
 
         if(user.isDisabled) return res.status(402).json({message:"Sorry your account is being disaled"})
+
+        if(!user.sessions || !user.sessions.includes(payload.sessionId)) return res.status(401).json({message: "No token found"});
         if (payload.role !== "user") {
             return res.status(403).json({ message: "Access denied" });
         }

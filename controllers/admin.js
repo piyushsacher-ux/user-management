@@ -21,9 +21,12 @@ const adminLogin = async (req, res) => {
     const realData = JSON.parse(data);
 
     const admin = realData.admins.find(a => a.email === email);
+
     if (!admin)
         return res.status(404).json({ message: "Admin not found" });
 
+    const superAdmin=(admin.email===process.env.SUPERADMIN_EMAIL)
+    
     const match = await bcrypt.compare(password, admin.password);
     if (!match)
         return res.status(400).json({ message: "Wrong credentials" });
@@ -33,7 +36,7 @@ const adminLogin = async (req, res) => {
     admin.sessions.push(sessionId);
 
     const token = jwt.sign(
-        { email: admin.email, id: admin.id, sessionId, role: "admin" },
+        { email: admin.email, id: admin.id, sessionId, role:superAdmin?"superAdmin":"admin"},
         "abcde123",
         { expiresIn: "1h" }
     );
@@ -43,9 +46,9 @@ const adminLogin = async (req, res) => {
     });
 
     fs.writeFileSync(filePath, JSON.stringify(realData, null, 2));
-
-    res.cookie("token", token, { httpOnly: true, maxAge: 1000 * 60 * 60 });
-    res.json({ message: "Admin login successful", token });
+    res.json({
+        message: superAdmin ? "SuperAdmin login successful" : "Admin login successful"
+    });
 };
 
 const adminRegister = async (req, res) => {
@@ -140,7 +143,6 @@ const adminUpdate = async (req, res) => {
                 id: upduser.id,
                 username: upduser.username,
                 email: upduser.email,
-                token: upduser.token
             }
         })
     } catch (err) {
@@ -176,8 +178,8 @@ const getUserById = async (req, res) => {
     try {
         const id = req.params.id;
         console.log(id);
-        if (!id) res.status(404).json({ message: "Please provide the id whose data you want to find" });
-        const data = fs.readFileSync(userPath,"utf-8");
+        if (!id) return res.status(404).json({ message: "Please provide the id whose data you want to find" });
+        const data = fs.readFileSync(userPath, "utf-8");
         const realData = JSON.parse(data);
 
         const particularUser = realData.users.find((u) => u.id == id);
@@ -185,8 +187,8 @@ const getUserById = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        const {id:uid,username,email}=particularUser;
-        const user={id:uid,username,email}
+        const { id: uid, username, email } = particularUser;
+        const user = { id: uid, username, email }
         return res.json({
             message: "User found",
             user: user
@@ -197,35 +199,35 @@ const getUserById = async (req, res) => {
 }
 
 const getAllUsers = async (req, res) => {
-    try{
-        const data=fs.readFileSync(userPath,"utf-8");
-        const realData=JSON.parse(data);
+    try {
+        const data = fs.readFileSync(userPath, "utf-8");
+        const realData = JSON.parse(data);
 
-        const allUsers=realData.users.map((user)=>({
-            id:user.id,
-            email:user.email,
-            username:user.username
+        const allUsers = realData.users.map((user) => ({
+            id: user.id,
+            email: user.email,
+            username: user.username
         }))
 
         return res.json({
-            message:"Here are all the users",
-            users:allUsers
-        }) 
-    }catch(err){
+            message: "Here are all the users",
+            users: allUsers
+        })
+    } catch (err) {
         return res.status(500).json({ message: "Some error occurred" })
     }
 }
 
-const disableUser=async(req,res)=>{
-    try{
+const disableUser = async (req, res) => {
+    try {
         const uid = req.params.uid;
         if (!uid) {
-            return res.status(400).json({ message:"Please provide a user ID to disable"});
+            return res.status(400).json({ message: "Please provide a user ID to disable" });
         }
         const data = fs.readFileSync(userPath, "utf-8");
         const realData = JSON.parse(data);
 
-        const disableUser = realData.users.find(user=>user.id==uid);
+        const disableUser = realData.users.find(user => user.id == uid);
         if (!disableUser) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -239,13 +241,45 @@ const disableUser=async(req,res)=>{
                 id: disableUser.id,
                 username: disableUser.username,
                 email: disableUser.email,
-                disabled: disableUser.disabled
+                disabled: disableUser.isDisabled
             }
         });
     }
-    catch(err){
+    catch (err) {
         return res.status(500).json({ message: "Some error occurred" })
     }
 }
 
-module.exports = { adminLogin, adminRegister, adminLogout, adminUpdate, profile, getAllUsers, getUserById ,disableUser};
+const forceLogOut = async (req, res) => {
+    try {
+        const uid = req.params.uid;
+        if (!uid) {
+            return res.status(400).json({ message: "Please provide a user ID to force Log Out" });
+        }
+        const data = fs.readFileSync(userPath, "utf-8");
+        const realData = JSON.parse(data);
+        const forceLogOutUser = realData.users.find(user => user.id == uid);
+        if (!forceLogOutUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (!forceLogOutUser.sessions || forceLogOutUser.sessions.length === 0) {
+            return res.status(200).json({
+                message: "User has no active sessions"
+            });
+        }
+
+        forceLogOutUser.sessions = [];
+
+        fs.writeFileSync(userPath, JSON.stringify(realData, null, 2));
+
+        return res.json({
+            message: "User forcefully loggedout successfully",
+        });
+
+    } catch (err) {
+        return res.status(500).json({ message: "Some error occurred" })
+    }
+}
+
+module.exports = { adminLogin, adminRegister, adminLogout, adminUpdate, profile, getAllUsers, getUserById, disableUser, forceLogOut };
