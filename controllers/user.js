@@ -138,6 +138,12 @@ const login = async (req, res) => {
     const sessionId = Date.now();
 
     user.sessions.push(sessionId);
+    if (!user.activity) user.activity = [];
+    user.activity.push({
+        type: "login",
+        timestamp: new Date().toISOString(),
+        sessionId
+    });
 
     const token = jwt.sign({ email: user.email, id: user.id, sessionId, role, type:"login"}, "abcde123", {
         expiresIn: "1h"
@@ -263,6 +269,13 @@ const logout = async (req, res) => {
     if (user.sessions) {
         user.sessions = user.sessions.filter(sid => sid !== sessionId);
     }
+
+    if (!user.activity) user.activity = [];
+    user.activity.push({
+        type: "logout",
+        timestamp: new Date().toISOString(),
+        sessionId: payload.sessionId
+    });
     fs.writeFileSync(filePath, JSON.stringify(realData, null, 2));
     res.clearCookie("token");
     res.json({ message: "Logout successful" });

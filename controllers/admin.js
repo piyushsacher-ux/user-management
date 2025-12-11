@@ -303,7 +303,6 @@ const role = async (req, res) => {
       if (!email || !permissions) {
         return res.status(400).json({ message: "email and permission object required" });
       }
-  
     
       const data = fs.readFileSync(filePath, "utf-8");
       const realData = JSON.parse(data);
@@ -334,56 +333,6 @@ const role = async (req, res) => {
     }
   };
 
-
-// const updateRole=async(req,res)=>{
-//     try{
-
-//     }catch(err){
-//         res.status(500).json({ message: "Server error" });
-//     }
-// }
-
-// const sendRoles=async(req,res)=>{
-//     try{
-//         const pathOfFile = path.join(__dirname, "..", "data", "role.json");
-//         const data=fs.readFileSync(pathOfFile,"utf-8");
-//         const realData=JSON.parse(data);
-
-//         const sendData=realData.roles.map((obj)=>({
-//             id:obj.id,
-//             name:obj.name
-//         }))
-
-//         res.status(200).json({message:"Here is your data",
-//             sendData
-//         }
-//     );
-
-//     }catch(err){
-//         res.status(500).json({ message: "Server error" });
-//     }
-// }
-
-// const sendRoleById=async(req,res)=>{
-//     try{
-//         const pathOfFile = path.join(__dirname, "..", "data", "role.json");
-//         const rid=req.params.rid;
-//         const data=fs.readFileSync(pathOfFile,"utf-8");
-//         const realData=JSON.parse(data);
-
-//         if (!realData.roles) realData.roles = [];
-
-//         const dataRole=realData.roles.find(r=>r.id==rid)
-//         if(!dataRole) return res.status(401).json({message:"Sorry this id does not exist"})
-
-//         res.status(200).json({message:"Here is your data",
-//             dataRole
-//         }
-//     );
-//     }catch(err){
-//         res.status(500).json({ message: "Server error" });
-//     }
-// }
 
 const updatePermissions=async(req,res)=>{
     try{
@@ -442,5 +391,26 @@ const adminUpdateUserData=async(req,res)=>{
     }
 }
 
+const getUserActivity=async(req,res)=>{
+    try{
+        const uid=req.params.uid;
+        const data=fs.readFileSync(userPath,"utf-8");
+        const realData=JSON.parse(data);
 
-module.exports = { adminLogin, adminRegister, adminLogout, adminUpdate, profile, getAllUsers, getUserById, disableUser, forceLogOut, role,updatePermissions, adminUpdateUserData};
+        const user = realData.users.find(u => u.id == uid);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        
+        res.json({
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            activity: user.activity || []
+        });
+
+    }catch(err){
+        return res.status(500).json({ message: "Some error occurred" })
+    }
+}
+
+
+module.exports = { adminLogin, adminRegister, adminLogout, adminUpdate, profile, getAllUsers, getUserById, disableUser, forceLogOut, role,updatePermissions, adminUpdateUserData,getUserActivity};

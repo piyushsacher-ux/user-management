@@ -1,7 +1,7 @@
 const express=require("express");
 const appRouter=express.Router();
 //const path = require("path");
-const { adminLogin, adminRegister,adminLogout,adminUpdate,profile,getAllUsers,getUserById,disableUser,forceLogOut, role,updatePermissions,adminUpdateUserData} = require("../controllers/admin");
+const { adminLogin, adminRegister,adminLogout,adminUpdate,profile,getAllUsers,getUserById,disableUser,forceLogOut, role,updatePermissions,adminUpdateUserData,getUserActivity} = require("../controllers/admin");
 const {adminAuth,superAdminAuth}=require("../middlewares/adminMidd")
 
 //const filePath = path.join(__dirname, "data/admin.json");
@@ -18,6 +18,7 @@ appRouter.post("/forceLogOut/:uid",adminAuth,forceLogOut)
 appRouter.post("/roles",superAdminAuth,role)
 appRouter.put("/updateRoles/:rid",superAdminAuth,updatePermissions)
 appRouter.put("/adminUpdateuserInfo/:uid",adminAuth,adminUpdateUserData)
+appRouter.get("/getUserActivity/:uid",adminAuth,getUserActivity)
 
 
 
